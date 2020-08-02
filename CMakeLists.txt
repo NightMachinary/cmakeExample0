@@ -29,6 +29,22 @@ include_directories(
         SYSTEM ${CURL_INCLUDE_DIRS}
 )
 target_link_libraries(labNIGHT
-        ${CURL_LIBRARIES}
+        PRIVATE ${CURL_LIBRARIES}
         )
 ##
+
+if (APPLE)
+    # This is a bug in CMake that causes it to prefer the system version over
+    # the one in the specified ROOT folder.
+    set(OPENSSL_ROOT_DIR ${OPENSSL_ROOT_DIR} /usr/local/opt/openssl@1.1)
+    set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libcrypto.dylib CACHE FILEPATH "" FORCE)
+    set(OPENSSL_SSL_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libssl.dylib CACHE FILEPATH "" FORCE)
+endif()
+
+set(USE_SYSTEM_CURL "ON")
+
+include(FetchContent)
+FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/whoshuu/cpr.git GIT_TAG c8d33915dbd88ad6c92b258869b03aba06587ff9) # the commit hash for 1.5.0
+FetchContent_MakeAvailable(cpr)
+
+target_link_libraries(labNIGHT PRIVATE cpr::cpr)
